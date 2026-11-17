@@ -28,9 +28,9 @@ def load(name):
     return Image.frombytes("RGBA", (w, h), data)
 
 
-def taskbar(widget):
+def taskbar(widget, w=430 * S):
     """Right end of a Windows 11 taskbar: widget, tray chevron, a few tray icons and the clock."""
-    w, h = 430 * S, 48 * S
+    h = 48 * S
     img = Image.new("RGBA", (w, h), BAR + (255,))
     d = ImageDraw.Draw(img)
     d.line((0, 0, w, 0), fill=(54, 54, 58), width=S)  # top hairline
@@ -65,7 +65,9 @@ def rounded(img, radius=10 * S, pad=24 * S, bg=(18, 18, 20)):
 def demo_gif():
     seq = [("87_lavender", 1600), ("87_cyan", 900), ("87_mint", 900), ("87_pink", 900), ("87_gold", 900),
            ("18_low", 1600), ("64_charging", 1600), ("12_charging", 1300), ("x_off", 1600)]
-    frames = [rounded(taskbar(load(n))).convert("RGB") for n, _ in seq]
+    widgets = [load(n) for n, _ in seq]
+    w = 198 * S + max(r.width for r in widgets) + 14 * S  # tray+clock, widest widget, small margin
+    frames = [rounded(taskbar(r, w), pad=10 * S).convert("RGB") for r in widgets]
     frames[0].save(OUT / "demo.gif", save_all=True, append_images=frames[1:],
                    duration=[ms for _, ms in seq], loop=0, optimize=True)
 
