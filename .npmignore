@@ -1,0 +1,2 @@
+# npm uses "files" in package.json; this file only stops npm from applying .gitignore (which hides bin/traymouse.exe)
+/target

@@ -220,8 +220,18 @@ fn wide(s: &str) -> Vec<u16> {
     s.encode_utf16().chain(Some(0)).collect()
 }
 
+/// %APPDATA%\TrayMouse: survives updates (npx unpacks each version into a new cache folder).
+fn settings_dir() -> PathBuf {
+    let dir = std::env::var_os("APPDATA").map_or_else(
+        || std::env::current_exe().unwrap_or_default().with_file_name(""),
+        |d| PathBuf::from(d).join("TrayMouse"),
+    );
+    let _ = std::fs::create_dir_all(&dir);
+    dir
+}
+
 fn pos_file() -> PathBuf {
-    std::env::current_exe().unwrap_or_default().with_file_name("traymouse_gap.txt") // right-edge gap; older _pos.txt measured from the left
+    settings_dir().join("gap.txt") // px between our right edge and the tray
 }
 
 fn rect(hwnd: HWND) -> RECT {
@@ -312,7 +322,7 @@ const MENU_COLOR: usize = 4;
 const MENU_COLOR_RESET: usize = 5;
 
 fn color_file() -> PathBuf {
-    std::env::current_exe().unwrap_or_default().with_file_name("traymouse_color.txt")
+    settings_dir().join("color.txt")
 }
 
 /// "rrggbb" -> colour
@@ -444,6 +454,12 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
 
 fn main() {
     unsafe {
+        // one widget only: a second launch (e.g. running `npx traymouse` again) just exits
+        use windows_sys::Win32::System::Threading::CreateMutexW;
+        let _guard = CreateMutexW(null_mut(), 0, wide(r"Local\TrayMouseSingleInstance").as_ptr());
+        if GetLastError() == ERROR_ALREADY_EXISTS {
+            return;
+        }
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2); // real pixels
         let tray = FindWindowW(wide("Shell_TrayWnd").as_ptr(), null_mut());
         let notify = FindWindowExW(tray, null_mut(), wide("TrayNotifyWnd").as_ptr(), null_mut());

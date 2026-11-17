@@ -29,7 +29,7 @@ dependencies = [
 
 [[package]]
 name = "traymouse"
-version = "0.1.0"
+version = "1.0.2"
 dependencies = [
  "ab_glyph",
  "windows-sys",

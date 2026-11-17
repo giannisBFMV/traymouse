@@ -1,0 +1,32 @@
+{
+  "name": "traymouse",
+  "version": "1.0.2",
+  "description": "Your wireless mouse battery, right on the Windows taskbar. LAMZU, Logitech, Razer.",
+  "bin": {
+    "traymouse": "bin/traymouse.js"
+  },
+  "files": [
+    "bin/"
+  ],
+  "os": [
+    "win32"
+  ],
+  "keywords": [
+    "mouse",
+    "battery",
+    "wireless-mouse",
+    "taskbar",
+    "windows",
+    "gaming-mouse",
+    "logitech",
+    "razer",
+    "lamzu"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giannisBFMV/traymouse.git"
+  },
+  "homepage": "https://github.com/giannisBFMV/traymouse#readme",
+  "bugs": "https://github.com/giannisBFMV/traymouse/issues",
+  "license": "MIT"
+}

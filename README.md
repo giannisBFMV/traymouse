@@ -17,13 +17,20 @@ No vendor software, no tray clutter, no surprises when your mouse dies mid-game.
 
 ## Download
 
-1. Grab **`traymouse.exe`** from the [latest release](../../releases/latest).
-2. Double-click it. That's it.
+**Option 1: the exe.** Grab **`traymouse.exe`** from the [latest release](../../releases/latest) and double-click it. That's it.
+
+**Option 2: npm.** If you have [Node.js](https://nodejs.org), one command puts it on your taskbar ([npm package](https://www.npmjs.com/package/traymouse)):
+
+```bash
+npx traymouse
+```
+
+Running it again while TrayMouse is already up does nothing, so you never get two. npx keeps the copy it downloaded; to get the newest version, run `npx traymouse@latest`.
 
 > Windows SmartScreen may warn you because the app isn't code-signed (signing costs money).
 > Click **More info → Run anyway**, or build it yourself from source (see below).
 
-**Start with Windows:** press `Win + R`, type `shell:startup`, and put a shortcut to `traymouse.exe` in that folder.
+**Start with Windows:** press `Win + R`, type `shell:startup`, and put a shortcut to `traymouse.exe` in that folder (or a `.cmd` file containing `npx traymouse`).
 
 ## Supported mice
 
@@ -58,7 +65,7 @@ If several supported mice are connected, TrayMouse shows the first one that's sw
 
 ## Privacy
 
-TrayMouse is **100% open source**, and **it collects no data at all**. It has no network code: no telemetry, no analytics, no update checks, no accounts. It only talks to your mouse's USB receiver. Your color and position are saved in two small text files next to the `.exe`.
+TrayMouse is **100% open source**, and **it collects no data at all**. It has no network code: no telemetry, no analytics, no update checks, no accounts. It only talks to your mouse's USB receiver. Your color and position are saved in two small text files in `%APPDATA%\TrayMouse`.
 
 ## Good to know
 
@@ -83,6 +90,10 @@ cargo +stable-x86_64-pc-windows-gnu build --release
 To run the tests, use `cargo test`. With a supported mouse connected, `cargo test -- --ignored reads_real_mouse` also checks it on real hardware.
 
 The mouse protocols live in [`src/mice.rs`](src/mice.rs), with one short section per brand, so adding a mouse is usually a few lines.
+
+### Publishing a new version (maintainers)
+
+Bump `version` in `package.json` and `Cargo.toml`, build the release exe, copy it to `bin/traymouse.exe`, then run `npm publish`. Also attach the same exe to a GitHub release.
 
 ## Credits
 
