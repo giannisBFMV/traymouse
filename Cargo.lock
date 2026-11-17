@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "squeak"
+name = "traymouse"
 version = "0.1.0"
 dependencies = [
  "ab_glyph",

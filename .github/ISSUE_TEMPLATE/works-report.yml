@@ -1,5 +1,5 @@
 name: It works / doesn't work with my mouse
-description: Report how Squeak does with a 🧪 untested mouse (or any problem)
+description: Report how TrayMouse does with a 🧪 untested mouse (or any problem)
 title: "Report: "
 body:
   - type: input
@@ -19,4 +19,4 @@ body:
     id: notes
     attributes:
       label: Details
-      description: What Squeak shows vs. what the official app shows, and whether it's on the receiver or the cable.
+      description: What TrayMouse shows vs. what the official app shows, and whether it's on the receiver or the cable.

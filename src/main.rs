@@ -1,4 +1,4 @@
-//! Squeak: wireless mouse battery on the Windows taskbar (mouse glyph + "71%").
+//! TrayMouse: wireless mouse battery on the Windows taskbar (mouse glyph + "71%").
 //! Supported mice and how each is read: see mice.rs.
 //! Below 25% the mouse and percent turn red; ⚡ + small percent while plugged in; red X when no mouse answers.
 //! Floats over the taskbar left of the tray, follows the tray's edge, hides over fullscreen apps.
@@ -221,7 +221,7 @@ fn wide(s: &str) -> Vec<u16> {
 }
 
 fn pos_file() -> PathBuf {
-    std::env::current_exe().unwrap_or_default().with_file_name("squeak_gap.txt") // right-edge gap; older _pos.txt measured from the left
+    std::env::current_exe().unwrap_or_default().with_file_name("traymouse_gap.txt") // right-edge gap; older _pos.txt measured from the left
 }
 
 fn rect(hwnd: HWND) -> RECT {
@@ -312,7 +312,7 @@ const MENU_COLOR: usize = 4;
 const MENU_COLOR_RESET: usize = 5;
 
 fn color_file() -> PathBuf {
-    std::env::current_exe().unwrap_or_default().with_file_name("squeak_color.txt")
+    std::env::current_exe().unwrap_or_default().with_file_name("traymouse_color.txt")
 }
 
 /// "rrggbb" -> colour
@@ -458,7 +458,7 @@ fn main() {
         let look = Look { color, font, scale: GetDpiForSystem() as f32 / 96.0 };
         let (w, h) = (look.width(None), (bar.bottom - bar.top) as usize);
 
-        let class = wide("SqueakBattery");
+        let class = wide("TrayMouseBattery");
         let inst = GetModuleHandleW(null_mut());
         let wc = WNDCLASSW {
             lpfnWndProc: Some(wndproc),
@@ -471,7 +471,7 @@ fn main() {
         let hwnd = CreateWindowExW(
             WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE,
             class.as_ptr(),
-            wide("Squeak").as_ptr(),
+            wide("TrayMouse").as_ptr(),
             WS_POPUP,
             0, 0, w as i32, h as i32,
             null_mut(), null_mut(), inst, null_mut(),
@@ -530,10 +530,10 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "writes 3x renders for the README to %TEMP%/squeak_showcase (see tools/showcase.py)"]
+    #[ignore = "writes 3x renders for the README to %TEMP%/traymouse_showcase (see tools/showcase.py)"]
     fn showcase() {
         let font = std::fs::read(r"C:\Windows\Fonts\seguisb.ttf").unwrap();
-        let dir = std::env::temp_dir().join("squeak_showcase");
+        let dir = std::env::temp_dir().join("traymouse_showcase");
         std::fs::create_dir_all(&dir).unwrap();
         let b = |percent, charging| Some(Battery { percent, charging });
         let (lav, cyan, mint, pink, gold, red) =

@@ -1,6 +1,6 @@
 """Builds assets/demo.gif and assets/states.png for the README.
 
-1. cargo test --release showcase -- --ignored   (renders the widget at 3x into %TEMP%/squeak_showcase)
+1. cargo test --release showcase -- --ignored   (renders the widget at 3x into %TEMP%/traymouse_showcase)
 2. python tools/showcase.py                      (needs Pillow; places renders on a mock Windows 11 taskbar)
 """
 import os
@@ -10,7 +10,7 @@ import tempfile
 from PIL import Image, ImageDraw, ImageFont
 
 S = 3  # renders are 3x, so everything here is drawn at 3x too
-SRC = pathlib.Path(tempfile.gettempdir()) / "squeak_showcase"
+SRC = pathlib.Path(tempfile.gettempdir()) / "traymouse_showcase"
 OUT = pathlib.Path(__file__).resolve().parent.parent / "assets"
 FONTS = pathlib.Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts"
 BAR = (32, 32, 34)

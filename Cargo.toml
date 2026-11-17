@@ -1,5 +1,5 @@
 [package]
-name = "squeak"
+name = "traymouse"
 description = "Wireless mouse battery on the Windows taskbar"
 license = "MIT"
 version = "0.1.0"
