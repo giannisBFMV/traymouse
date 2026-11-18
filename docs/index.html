@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrayMouse: wireless mouse battery on your Windows taskbar</title>
+<meta name="description" content="TrayMouse shows your wireless mouse battery right next to the Windows system tray. LAMZU, Logitech and Razer. One tiny .exe, no install, no data collected, open source.">
+<link rel="canonical" href="https://giannisbfmv.github.io/traymouse/">
+<meta name="theme-color" content="#0e0e12">
+<meta name="color-scheme" content="dark light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TrayMouse">
+<meta property="og:title" content="TrayMouse: your wireless mouse battery, right on the Windows taskbar">
+<meta property="og:description" content="A tiny mouse icon and the battery percentage, next to your tray. No vendor software, no install, no data collected.">
+<meta property="og:url" content="https://giannisbfmv.github.io/traymouse/">
+<meta property="og:image" content="https://giannisbfmv.github.io/traymouse/states.png">
+<meta property="og:image:width" content="1608">
+<meta property="og:image:height" content="1350">
+<meta property="og:image:alt" content="Every TrayMouse widget state: battery level, custom colors, low battery, charging and disconnected">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TrayMouse: wireless mouse battery on your taskbar">
+<meta name="twitter:description" content="A tiny mouse icon and the battery percentage, next to your Windows tray. Open source, no data collected.">
+<meta name="twitter:image" content="https://giannisbfmv.github.io/traymouse/states.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='8' y='3' width='16' height='26' rx='8' fill='none' stroke='%23968cff' stroke-width='3.2'/%3E%3Cpath d='M16 8v5' stroke='%23968cff' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+:root{
+  --bg:#0b0b0f;--bg2:#111117;--card:#15151c;--card2:#1b1b24;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);
+  --text:#ececf3;--muted:#a3a3b5;--dim:#7c7c8e;
+  --accent:rgb(150,140,255);--accent-ink:#b9b2ff;--accent-soft:rgba(150,140,255,.14);
+  --red:rgb(255,70,70);--green:#4ade80;--amber:#fbbf24;
+  --radius:16px;--max:1120px;
+  --font:'Geist',ui-sans-serif,system-ui,'Segoe UI',sans-serif;--mono:'Geist Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#f7f7fb;--bg2:#efeff6;--card:#fff;--card2:#f3f3f9;--line:rgba(20,20,40,.09);--line2:rgba(20,20,40,.16);
+  --text:#15151f;--muted:#55556a;--dim:#6b6b80;--accent-ink:#5a4fe0;--accent-soft:rgba(110,98,240,.1);--green:#15803d;--amber:#a15c07;
+  color-scheme:light;
+}}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.6 var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg{display:block;max-width:100%}
+a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+code,kbd{font-family:var(--mono);font-size:.9em}
+:not(pre)>code{background:var(--card2);border:1px solid var(--line);padding:.1em .4em;border-radius:6px}
+kbd{border:1px solid var(--line2);border-bottom-width:2px;padding:.05em .4em;border-radius:5px;background:var(--card)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;z-index:100;background:var(--accent);color:#0b0b0f;padding:8px 14px;border-radius:8px}
+.skip:focus{left:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
+@supports (animation-timeline:scroll()){
+  .nav{animation:navin linear both;animation-timeline:scroll();animation-range:0 160px}
+  @keyframes navin{from{border-bottom-color:transparent;background:transparent}}
+}
+.nav .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em;color:var(--text);text-decoration:none;font-size:17px}
+.brand svg{width:14px;height:22px;color:var(--accent)}
+.nav ul{display:flex;gap:4px;list-style:none;margin:0 0 0 auto;padding:0}
+.nav ul a{display:block;color:var(--muted);text-decoration:none;font-size:14.5px;padding:6px 10px;border-radius:8px}
+.nav ul a:hover{color:var(--text);background:var(--card2)}
+.gh{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;border:1px solid var(--line2);padding:7px 12px;border-radius:10px}
+.gh:hover{background:var(--card2)}
+.gh svg{width:16px;height:16px}
+@media (max-width:820px){.nav ul{display:none}.gh{margin-left:auto}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 20px;border-radius:12px;font:500 15.5px var(--font);text-decoration:none;cursor:pointer;border:1px solid transparent;transition:transform .15s,background .15s,box-shadow .2s}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-primary{background:var(--accent);color:#0c0b1a;box-shadow:0 8px 30px -8px rgba(150,140,255,.6),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 36px -8px rgba(150,140,255,.75),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn-ghost{background:var(--card);color:var(--text);border-color:var(--line2)}
+.btn-ghost:hover{background:var(--card2)}
+.cmd{display:inline-flex;align-items:center;min-height:48px;border:1px solid var(--line2);background:var(--card);border-radius:12px;font-family:var(--mono);font-size:15px;padding:0 6px 0 16px;gap:12px;max-width:100%}
+.cmd .p{color:var(--dim);user-select:none}
+.cmd code{white-space:nowrap;background:none;border:0;padding:0}
+.copy{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--card2);color:var(--muted);font:500 13px var(--font);height:36px;padding:0 12px;border-radius:8px;cursor:pointer}
+.copy:hover{color:var(--text)}
+.copy svg{width:15px;height:15px}
+.copy.ok{color:var(--green)}
+
+/* hero */
+.hero{position:relative;padding:88px 0 72px;text-align:center;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-64px 0 0;z-index:-1;background:radial-gradient(60% 55% at 50% 0%,rgba(150,140,255,.22),transparent 70%),linear-gradient(var(--line) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/48px 48px;-webkit-mask:radial-gradient(70% 70% at 50% 20%,#000 30%,transparent 80%);mask:radial-gradient(70% 70% at 50% 20%,#000 30%,transparent 80%)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);border:1px solid var(--line2);background:color-mix(in srgb,var(--card) 70%,transparent);padding:5px 12px 5px 8px;border-radius:999px}
+.eyebrow b{font-weight:500;color:var(--accent-ink);background:var(--accent-soft);padding:1px 8px;border-radius:999px}
+h1{font-size:clamp(38px,6.4vw,68px);line-height:1.04;letter-spacing:-.035em;font-weight:650;margin:22px auto 18px;max-width:14ch;text-wrap:balance}
+h1 em{font-style:normal;background:linear-gradient(100deg,#d6d2ff,var(--accent) 50%,#7b6fff);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (prefers-color-scheme:light){h1 em{background-image:linear-gradient(100deg,#7b6fff,#5a4fe0)}}
+.lede{font-size:clamp(17px,2vw,19.5px);color:var(--muted);max-width:56ch;margin:0 auto 32px;text-wrap:pretty}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.fine{margin-top:14px;font-size:13.5px;color:var(--dim)}
+
+/* taskbar mock */
+.stage{margin:56px auto 0;max-width:720px;position:relative}
+.screen{position:relative;border-radius:20px;padding:110px 0 0;background:radial-gradient(120% 120% at 30% 0%,#2b2550,#14131f 55%,#0d0d14);border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 100px -30px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.4);overflow:hidden}
+.screen::before{content:"";position:absolute;width:420px;height:420px;left:50%;top:-220px;translate:-50% 0;background:radial-gradient(closest-side,rgba(150,140,255,.35),transparent);filter:blur(10px)}
+.js .screen{animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+.taskbar{position:relative;display:flex;align-items:center;height:64px;padding:0 14px;background:rgba(28,28,34,.88);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.07);color:#fff}
+.apps{position:absolute;left:50%;translate:-50% 0;display:flex;gap:10px}
+.apps i{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.1)}
+@media (max-width:780px){.apps{display:none}}
+.apps i:first-child{background:linear-gradient(135deg,#9a91ff,#5b8cff)}
+.tray{margin-left:auto;display:flex;align-items:center;gap:6px;position:relative;z-index:1}
+.tray .ic{width:18px;height:18px;opacity:.85;color:#fff}
+.clock{font:400 13px/1.25 'Segoe UI',var(--font);text-align:right;margin-left:8px;opacity:.95}
+.widget{--m:rgb(150,140,255);display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 10px;border-radius:8px;font:600 20px/1 'Segoe UI Variable','Segoe UI',var(--font);color:#fff;font-variant-numeric:tabular-nums;margin-right:8px;transition:background .2s}
+.widget:hover{background:rgba(255,255,255,.06)}
+.widget .ms{width:15px;height:26px;color:var(--m);transition:color .35s}
+.widget .bolt{width:11px;height:17px;display:none}
+.widget .x{width:15px;height:15px;color:var(--red);display:none}
+.widget.low{--m:var(--red);color:var(--red)}
+.widget.low .ms{color:var(--red)}
+.widget.chg .bolt{display:block}
+.widget.chg .pct{font-size:16px}
+.widget.off .x{display:block}
+.widget.off .pct{display:none}
+.caption{margin:18px auto 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{font:500 13.5px var(--font);color:var(--muted);background:var(--card);border:1px solid var(--line2);padding:7px 13px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:color .2s,border-color .2s,background .2s}
+.chip:hover{color:var(--text)}
+.chip[aria-pressed=true]{color:var(--text);border-color:var(--accent);background:var(--accent-soft)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* sections */
+section{padding:96px 0}
+.sec-head{max-width:640px;margin-bottom:48px}
+.sec-head.c{margin-left:auto;margin-right:auto;text-align:center}
+.kicker{font:500 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink)}
+h2{font-size:clamp(30px,4.2vw,44px);line-height:1.1;letter-spacing:-.03em;font-weight:650;margin:10px 0 14px;text-wrap:balance}
+.sec-head p{color:var(--muted);font-size:17.5px;margin:0;text-wrap:pretty}
+h3{font-size:17.5px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+.alt{background:var(--bg2);border-block:1px solid var(--line)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;position:relative;overflow:hidden;transition:border-color .25s,transform .25s}
+.card:hover{border-color:var(--line2);transform:translateY(-2px)}
+.card p{margin:0;color:var(--muted);font-size:15.5px}
+.card .ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);margin-bottom:18px}
+.card .ico svg{width:20px;height:20px}
+
+/* states */
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
+.state{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.state .tb{background:#1c1c22;border-radius:10px;height:64px;display:flex;align-items:center;gap:6px;padding:0 12px;margin-bottom:16px;overflow:hidden;flex-wrap:wrap;border:1px solid rgba(255,255,255,.06)}
+.state .widget{margin:0;padding:0 6px;font-size:18px}
+.state .widget .ms{width:13px;height:23px}
+.state p{margin:0;color:var(--muted);font-size:15px}
+.demo{margin-top:40px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;max-width:760px;margin-inline:auto}
+.demo img{width:100%;height:auto;border-radius:10px;background:#1c1c22}
+.demo figcaption{color:var(--dim);font-size:13.5px;text-align:center;padding:10px 4px 2px}
+
+/* table */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;font-size:15px}
+.tbl th,.tbl td{text-align:left;padding:16px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl thead th{font:500 12.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--dim);background:var(--card2)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td:first-child{font-weight:600;white-space:nowrap}
+.tbl td small{display:block;font-weight:400;color:var(--dim);font-size:13px}
+.tbl td:last-child{color:var(--muted)}
+.brandtag{display:inline-block;font:500 11.5px var(--mono);color:var(--dim);letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+.badge{display:inline-flex;align-items:center;gap:6px;font:500 13px var(--font);padding:3px 10px;border-radius:999px;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.ok{color:var(--green);background:color-mix(in srgb,var(--green) 13%,transparent)}
+.ut{color:var(--amber);background:color-mix(in srgb,var(--amber) 13%,transparent)}
+@media (max-width:720px){
+  .tbl thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block}
+  .tbl tr{padding:16px 18px;border-bottom:1px solid var(--line)}
+  .tbl tr:last-child{border-bottom:0}
+  .tbl td{padding:0;border:0}
+  .tbl td:first-child{white-space:normal}
+  .tbl td+td{margin-top:8px}
+}
+.note{margin-top:20px;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.note>div{border:1px dashed var(--line2);border-radius:var(--radius);padding:20px 22px;color:var(--muted);font-size:15px}
+.note p{margin:0}
+
+/* install */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px;display:flex;flex-direction:column;gap:14px}
+.step p{margin:0;color:var(--muted);font-size:15.5px}
+.num{font:500 12.5px var(--mono);color:var(--accent-ink);letter-spacing:.05em}
+.step .btn,.step .cmd{align-self:flex-start}
+.callout{margin-top:16px;display:flex;gap:14px;align-items:flex-start;background:color-mix(in srgb,var(--amber) 8%,var(--card));border:1px solid color-mix(in srgb,var(--amber) 25%,transparent);border-radius:var(--radius);padding:18px 20px;font-size:15px;color:var(--muted)}
+.callout svg{width:20px;height:20px;flex:none;color:var(--amber);margin-top:2px}
+.callout p{margin:0}
+.usage{margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:860px){.usage{grid-template-columns:1fr}}
+.menu{background:#202027;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px;max-width:300px;box-shadow:0 20px 50px -20px rgba(0,0,0,.6);color:#f2f2f2;font:400 14px 'Segoe UI',var(--font);margin-top:16px}
+.menu div{padding:8px 12px;border-radius:6px}
+.menu div:hover{background:rgba(255,255,255,.08)}
+.menu hr{border:0;border-top:1px solid rgba(255,255,255,.1);margin:4px 2px}
+.list{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.list li{display:grid;grid-template-columns:auto 1fr;gap:12px;color:var(--muted);font-size:15.5px}
+.list b{color:var(--text);font-weight:600}
+.list svg{width:18px;height:18px;color:var(--accent-ink);margin-top:3px}
+
+/* privacy */
+.split{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center}
+@media (max-width:860px){.split{grid-template-columns:1fr;gap:32px}}
+.zeros{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.zeros div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.zeros b{display:block;font-size:30px;letter-spacing:-.03em;font-weight:650;color:var(--text)}
+.zeros span{font-size:14px;color:var(--muted)}
+
+/* cta */
+.cta{position:relative;overflow:hidden;text-align:center;border-radius:24px;padding:64px 24px;background:radial-gradient(80% 120% at 50% 0%,rgba(150,140,255,.22),transparent 70%),var(--card);border:1px solid var(--line2)}
+.cta p{color:var(--muted);max-width:54ch;margin:0 auto 28px;font-size:17px}
+
+/* maker showcase */
+.maker{padding:48px 32px;text-align:center;background:radial-gradient(80% 120% at 50% 0%,rgba(150,140,255,.16),transparent 70%),var(--card);border-color:var(--line2)}
+.maker:hover{transform:none}
+.maker p{max-width:54ch;margin:0 auto 24px;font-size:17px}
+.maker img{display:block;width:100%;max-width:640px;height:auto;margin:0 auto 28px;border-radius:12px;background:#1c1c22}
+@media (max-width:480px){.maker{padding:36px 18px}}
+
+/* faq */
+.faq{max-width:780px;margin:0 auto;display:grid;gap:10px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;transition:border-color .2s}
+.faq details[open]{border-color:var(--line2)}
+.faq summary{cursor:pointer;list-style:none;padding:18px 52px 18px 22px;font-weight:550;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:22px;top:50%;width:9px;height:9px;border-right:2px solid var(--dim);border-bottom:2px solid var(--dim);translate:0 -70%;rotate:45deg;transition:rotate .25s,translate .25s}
+.faq details[open] summary::after{rotate:225deg;translate:0 -20%}
+.faq details>div{padding:0 22px 20px;color:var(--muted);font-size:15.5px}
+.faq details>div p{margin:0}
+
+footer{border-top:1px solid var(--line);padding:40px 0 48px;color:var(--dim);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;justify-content:space-between}
+footer nav{display:flex;flex-wrap:wrap;gap:6px 20px}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--text);text-decoration:underline}
+
+/* reveal (only hides content once JS is confirmed running) */
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0) * 70ms)}
+.js .rv.in{opacity:1;transform:none}
+.js .hero .rv{animation:up .8s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0) * 90ms);opacity:1;transform:none;transition:none}
+@keyframes up{from{opacity:0;transform:translateY(16px)}}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+}
+@media (max-width:480px){
+  .wrap{padding:0 16px}
+  section{padding:72px 0}
+  .hero{padding:56px 0 56px}
+  .ctas>*{width:100%}
+  .cmd{justify-content:space-between}
+  .screen{padding-top:70px;border-radius:14px}
+  .apps{display:none}
+  .taskbar{padding:0 8px;height:56px}
+  .widget{font-size:17px;padding:0 6px;margin-right:2px}
+  .widget .ms{width:13px;height:22px}
+  .tray .ic:nth-of-type(n+3){display:none}
+  .clock{font-size:12px;margin-left:4px}
+  .zeros b{font-size:24px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="m" viewBox="0 0 14 24"><rect x="1.4" y="1.4" width="11.2" height="21.2" rx="5.6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7 5.2v3.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="b" viewBox="0 0 11 17"><path d="M7 0 0 9.8h4.4L3.4 17 11 6.6H6.4z" fill="currentColor"/></symbol>
+  <symbol id="x" viewBox="0 0 16 16"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+  <symbol id="gh" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></symbol>
+  <symbol id="dl" viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="cp" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 8V6a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="ck" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="TrayMouse home"><svg aria-hidden="true"><use href="#m"/></svg>TrayMouse</a>
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#states">States</a></li>
+        <li><a href="#mice">Mice</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <a class="gh" href="https://github.com/giannisBFMV/traymouse"><svg aria-hidden="true"><use href="#gh"/></svg>GitHub</a>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero" id="top" aria-labelledby="h-hero">
+  <div class="wrap">
+    <span class="eyebrow rv" style="--i:0"><b>Windows</b> Free and open source, MIT</span>
+    <h1 id="h-hero" class="rv" style="--i:1">Your mouse battery, <em>right on the taskbar.</em></h1>
+    <p class="lede rv" style="--i:2">TrayMouse puts a tiny mouse icon and the battery percentage next to your system tray. No vendor software, no tray clutter, no surprises when your mouse dies mid-game.</p>
+    <div class="ctas rv" style="--i:3">
+      <div class="cmd"><span class="p" aria-hidden="true">&gt;</span><code>npx traymouse</code><button class="copy" type="button" data-copy="npx traymouse"><svg aria-hidden="true"><use href="#cp"/></svg><span>Copy</span></button></div>
+      <a class="btn btn-primary" href="https://github.com/giannisBFMV/traymouse/releases/latest"><svg aria-hidden="true"><use href="#dl"/></svg>Download traymouse.exe</a>
+    </div>
+    <p class="fine rv" style="--i:4">One ~450 KB .exe &middot; about 12 MB of RAM &middot; nothing to install</p>
+
+    <div class="stage rv" style="--i:5">
+      <div class="screen" role="img" aria-label="Animated mock of the Windows taskbar showing the TrayMouse widget next to the system tray, cycling through its states">
+        <div class="taskbar" aria-hidden="true">
+          <div class="apps"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tray">
+            <span class="widget" id="live"><svg class="ms"><use href="#m"/></svg><svg class="bolt"><use href="#b"/></svg><span class="pct">87%</span><svg class="x"><use href="#x"/></svg></span>
+            <svg class="ic" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="19.3" r="1.3" fill="currentColor"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <div class="clock">4:51 PM<br>11/17/2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="caption" id="chips" hidden>
+        <button class="chip" type="button" data-to="0" aria-pressed="true"><span class="dot" style="color:rgb(150,140,255)"></span>Battery level</button>
+        <button class="chip" type="button" data-to="1" aria-pressed="false"><span class="dot" style="color:#38bdf8"></span>Any color</button>
+        <button class="chip" type="button" data-to="5" aria-pressed="false"><span class="dot" style="color:rgb(255,70,70)"></span>Low battery</button>
+        <button class="chip" type="button" data-to="6" aria-pressed="false"><span class="dot" style="color:#fbbf24"></span>Charging</button>
+        <button class="chip" type="button" data-to="7" aria-pressed="false"><span class="dot" style="color:#a3a3b5"></span>Disconnected</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt" aria-labelledby="h-feat">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Features</span>
+      <h2 id="h-feat">Small enough to forget. Useful every day.</h2>
+      <p>It looks like a native tray icon, follows the edge of the tray and stays out of your way.</p>
+    </div>
+    <div class="grid">
+      <article class="card rv" style="--i:0"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 10.5v3M6 10v4M9 10v4M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><h3>Always visible</h3><p>A tiny mouse icon and the battery percentage, sitting right next to your tray.</p></article>
+      <article class="card rv" style="--i:1"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.7-1.6-2.1-1.6-3.5 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4c0-4-4-7-9-7z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10.5" cy="7" r="1.3" fill="currentColor"/><circle cx="15.5" cy="7.5" r="1.3" fill="currentColor"/></svg></div><h3>Any color you like</h3><p>Right-click &rarr; <i>Mouse color&hellip;</i> to pick the icon color. <i>Reset color</i> brings back the default lavender.</p></article>
+      <article class="card rv" style="--i:2"><div class="ico" style="color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.2" fill="currentColor"/></svg></div><h3>Low battery warning</h3><p>Below 25% the mouse and the number turn red, even if you picked a red mouse.</p></article>
+      <article class="card rv" style="--i:0"><div class="ico" style="color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent)"><svg viewBox="0 0 11 17" aria-hidden="true"><use href="#b"/></svg></div><h3>Charging indicator</h3><p>Plug in the cable and you get a bolt plus the current level.</p></article>
+      <article class="card rv" style="--i:1"><div class="ico" style="color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent)"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#x"/></svg></div><h3>Connection status</h3><p>A red &#x2715; when the receiver is unplugged or the mouse is off. It checks every 5 seconds.</p></article>
+      <article class="card rv" style="--i:2"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M10 13l2-2 2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Stays out of your way</h3><p>Hides automatically over fullscreen games and videos.</p></article>
+      <article class="card rv" style="--i:0"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4C10 4 5 9 5 17v3M5 17c8 0 13-4 15-13M9 13l4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Tiny</h3><p>One ~450 KB <code>.exe</code>, about 12 MB of RAM, nothing to install. Written in Rust.</p></article>
+      <article class="card rv" style="--i:1"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Private by design</h3><p>No network code at all: no telemetry, no analytics, no update checks, no accounts.</p></article>
+      <article class="card rv" style="--i:2"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><h3>No vendor software</h3><p>Reads the battery straight from the receiver. LAMZU, Logitech and Razer supported.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="states" aria-labelledby="h-states">
+  <div class="wrap">
+    <div class="sec-head c rv">
+      <span class="kicker">At a glance</span>
+      <h2 id="h-states">Every state, one look.</h2>
+      <p>Five states cover everything your mouse can tell you.</p>
+    </div>
+    <div class="states">
+      <figure class="state rv" style="--i:0;margin:0"><div class="tb" role="img" aria-label="Lavender mouse icon, 87%"><span class="widget" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span></div><figcaption><h3>Battery level</h3><p>The percentage in white, next to the tray.</p></figcaption></figure>
+      <figure class="state rv" style="--i:1;margin:0"><div class="tb" role="img" aria-label="Mouse icon in cyan, green and pink, each 87%"><span class="widget" style="--m:#38bdf8" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span><span class="widget" style="--m:#4ade80" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span><span class="widget" style="--m:#f472b6" aria-hidden="true"><svg class="ms"><use href="#m"/></svg></span></div><figcaption><h3>Pick any color</h3><p>Right-click &rarr; <i>Mouse color&hellip;</i></p></figcaption></figure>
+      <figure class="state rv" style="--i:2;margin:0"><div class="tb" role="img" aria-label="Red mouse icon, red 18%"><span class="widget low" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">18%</span></span></div><figcaption><h3>Below 25%</h3><p>Mouse and number turn red.</p></figcaption></figure>
+      <figure class="state rv" style="--i:0;margin:0"><div class="tb" role="img" aria-label="Mouse icon, charging bolt, 64%; and red mouse icon, bolt, red 12%"><span class="widget chg" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="bolt"><use href="#b"/></svg><span class="pct">64%</span></span><span class="widget chg low" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="bolt" style="color:#fff"><use href="#b"/></svg><span class="pct">12%</span></span></div><figcaption><h3>Plugged in</h3><p>A bolt plus the current level.</p></figcaption></figure>
+      <figure class="state rv" style="--i:1;margin:0"><div class="tb" role="img" aria-label="Mouse icon with a red cross"><span class="widget off" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="x"><use href="#x"/></svg></span></div><figcaption><h3>Not answering</h3><p>Receiver unplugged or mouse off.</p></figcaption></figure>
+    </div>
+    <figure class="demo rv">
+      <img src="demo.gif" width="861" height="204" loading="lazy" decoding="async" alt="Recording of TrayMouse on the Windows 11 taskbar: battery level, custom colors, low battery, charging and disconnected">
+      <figcaption>The real thing, recorded on a Windows 11 taskbar.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="mice" class="alt" aria-labelledby="h-mice">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Supported mice</span>
+      <h2 id="h-mice">LAMZU, Logitech and Razer.</h2>
+      <p>Tested mice have been confirmed on real hardware. Untested ones are built from proven open-source protocol work and are waiting for a first report.</p>
+    </div>
+    <div class="rv">
+    <table class="tbl">
+      <caption class="sr">Supported mice, test status and how the battery is read</caption>
+      <thead><tr><th scope="col">Mouse</th><th scope="col">Status</th><th scope="col">How the battery is read</th></tr></thead>
+      <tbody>
+        <tr><td><span class="brandtag">LAMZU</span><br>Maya X<small>8K dongle</small></td><td><span class="badge ok">Tested</span></td><td>The same request LAMZU's official web driver (<a href="https://www.lamzu.net">lamzu.net</a>) sends to the dongle.</td></tr>
+        <tr><td><span class="brandtag">Logitech</span><br>G Pro Wireless</td><td><span class="badge ok">Tested</span><small>receiver and cable</small></td><td>Logitech's HID++ 2.0 protocol, battery voltage feature (<code>0x1001</code>), converted to a percentage.</td></tr>
+        <tr><td><span class="brandtag">Logitech</span><br>G Pro X Superlight</td><td><span class="badge ut">Untested</span></td><td>Same protocol and battery feature as the G Pro Wireless, so it's very likely to work.</td></tr>
+        <tr><td><span class="brandtag">Logitech</span><br>G Pro X Superlight 2</td><td><span class="badge ut">Untested</span></td><td>HID++ 2.0 unified battery feature (<code>0x1004</code>), which reports a percentage directly.</td></tr>
+        <tr><td><span class="brandtag">Razer</span><br>Viper V3 Pro</td><td><span class="badge ut">Untested</span></td><td>Razer's control protocol (battery <code>07 80</code>, charging <code>07 84</code>), wired or HyperSpeed dongle.</td></tr>
+        <tr><td><span class="brandtag">Razer</span><br>DeathAdder V3 Pro</td><td><span class="badge ut">Untested</span></td><td>Same as the Viper V3 Pro.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="note">
+      <div class="rv" style="--i:0"><p><b style="color:var(--text)">How the untested mice were added.</b> They were written from the protocol work of <a href="https://github.com/pwr-Solaar/Solaar">Solaar</a> (Logitech) and <a href="https://github.com/openrazer/openrazer">OpenRazer</a> (Razer). Device IDs, commands and checksums come from their drivers, so they're not guesses, but nobody has run them on that exact mouse yet. Own one? <a href="https://github.com/giannisBFMV/traymouse/issues/new/choose">Tell me whether it works</a>: one quick report moves it to Tested.</p></div>
+      <div class="rv" style="--i:1"><p><b style="color:var(--text)">Other Logitech mice</b> on a Lightspeed receiver will often work too, since they speak the same protocol. If several supported mice are connected, TrayMouse shows the first one that's switched on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="install" aria-labelledby="h-install">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">Install</span>
+      <h2 id="h-install">On your taskbar in seconds.</h2>
+      <p>Two ways in. Neither needs an installer.</p>
+    </div>
+    <div class="steps">
+      <div class="step rv" style="--i:0">
+        <span class="num">OPTION 1 &middot; THE EXE</span>
+        <h3>Download and double-click</h3>
+        <p>Grab <code>traymouse.exe</code> from the latest release and run it. That's it.</p>
+        <a class="btn btn-primary" href="https://github.com/giannisBFMV/traymouse/releases/latest"><svg aria-hidden="true"><use href="#dl"/></svg>Latest release</a>
+      </div>
+      <div class="step rv" style="--i:1">
+        <span class="num">OPTION 2 &middot; NPM</span>
+        <h3>One command</h3>
+        <p>If you have <a href="https://nodejs.org">Node.js</a>, this puts it on your taskbar (<a href="https://www.npmjs.com/package/traymouse">npm package</a>):</p>
+        <div class="cmd"><span class="p" aria-hidden="true">&gt;</span><code>npx traymouse</code><button class="copy" type="button" data-copy="npx traymouse"><svg aria-hidden="true"><use href="#cp"/></svg><span>Copy</span></button></div>
+        <p style="font-size:14px">Running it again while it's already up does nothing, so you never get two. For the newest version run <code>npx traymouse@latest</code>.</p>
+      </div>
+    </div>
+    <div class="callout rv"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.1" fill="currentColor"/></svg><p><b style="color:var(--text)">SmartScreen warning?</b> The app isn't code-signed (signing costs money), so Windows may warn you. Click <b style="color:var(--text)">More info &rarr; Run anyway</b>, or <a href="https://github.com/giannisBFMV/traymouse#build-from-source">build it yourself from source</a>.</p></div>
+
+    <div class="usage">
+      <div class="step rv" style="--i:0">
+        <span class="num">USING IT</span>
+        <h3>Right-click the widget</h3>
+        <div class="menu" aria-hidden="true"><div>Refresh now</div><hr><div>Mouse color&hellip;</div><div>Reset color</div><div>Reset position</div><hr><div>Quit</div></div>
+        <ul class="list">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ck"/></svg><span><b>Refresh now</b> reads the battery immediately (it also refreshes every 5 seconds).</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ck"/></svg><span><b>Drag</b> the widget to change its distance from the tray. <b>Reset position</b> puts it back.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ck"/></svg><span><b>Quit</b> closes TrayMouse.</span></li>
+        </ul>
+      </div>
+      <div class="step rv" style="--i:1">
+        <span class="num">GOOD TO KNOW</span>
+        <h3>Settings and startup</h3>
+        <ul class="list">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ck"/></svg><span>Your color and position are saved in two small text files in <code>%APPDATA%\TrayMouse</code>.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ck"/></svg><span><b>Start with Windows:</b> press <kbd>Win</kbd>+<kbd>R</kbd>, type <code>shell:startup</code>, and put a shortcut to <code>traymouse.exe</code> in that folder (or a <code>.cmd</code> file containing <code>npx traymouse</code>).</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ck"/></svg><span>Works on <b>Windows 10 and 11</b>, with the taskbar at the bottom of the main screen. The text is white, so it looks best on a dark taskbar.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy" class="alt" aria-labelledby="h-priv">
+  <div class="wrap split">
+    <div class="rv">
+      <span class="kicker">Privacy &amp; open source</span>
+      <h2 id="h-priv">It talks to your receiver. Nothing else.</h2>
+      <p style="color:var(--muted);font-size:17.5px">TrayMouse is 100% open source and collects no data at all. It has no network code: no telemetry, no analytics, no update checks, no accounts. It only talks to your mouse's USB receiver.</p>
+      <p style="color:var(--muted)">MIT licensed. The mouse protocols live in <a href="https://github.com/giannisBFMV/traymouse/blob/main/src/mice.rs"><code>src/mice.rs</code></a>, one short section per brand, so adding a mouse is usually a few lines.</p>
+      <a class="btn btn-ghost" href="https://github.com/giannisBFMV/traymouse"><svg aria-hidden="true"><use href="#gh"/></svg>Read the source</a>
+    </div>
+    <div class="zeros rv" style="--i:1">
+      <div><b>0</b><span>network requests</span></div>
+      <div><b>0</b><span>accounts</span></div>
+      <div><b>0</b><span>telemetry</span></div>
+      <div><b>MIT</b><span>license</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="request" aria-labelledby="h-req">
+  <div class="wrap">
+    <div class="cta rv">
+      <span class="kicker">Your mouse not listed?</span>
+      <h2 id="h-req">Ask for it. New mice are added on request.</h2>
+      <p>Open a mouse request with the model name and it'll be taken from there. Own an untested mouse? A quick "it works" report moves it to Tested. Feedback, bug reports and ideas are all welcome.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="https://github.com/giannisBFMV/traymouse/issues/new/choose">Request a mouse</a>
+        <a class="btn btn-ghost" href="https://github.com/giannisBFMV/traymouse/issues/new/choose">Report how it works</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="alt" aria-labelledby="h-faq">
+  <div class="wrap">
+    <div class="sec-head c rv">
+      <span class="kicker">FAQ</span>
+      <h2 id="h-faq">Questions, answered.</h2>
+    </div>
+    <div class="faq rv">
+      <details><summary>Which Windows versions does it work on?</summary><div><p>Windows 10 and 11, with the taskbar at the bottom of the main screen. The text is white, so it looks best on a dark taskbar.</p></div></details>
+      <details><summary>Does it need internet, or collect anything?</summary><div><p>No. It has no network code at all: no telemetry, no analytics, no update checks, no accounts. It only talks to your mouse's USB receiver.</p></div></details>
+      <details><summary>Is it really inside the taskbar?</summary><div><p>Windows 11 doesn't allow apps inside the taskbar, so TrayMouse floats just above it, next to the tray, and hides itself when a fullscreen app is in front.</p></div></details>
+      <details><summary>Why is the percentage different from Logitech G HUB?</summary><div><p>The G Pro Wireless and original Superlight report a voltage, not a percentage, so the number is an estimate (&plusmn;10%). Right after unplugging the charger it reads a little high and settles over the next 30&ndash;60 minutes. G HUB estimates battery from its own usage timers instead of reading the battery.</p></div></details>
+      <details><summary>Windows SmartScreen warned me. Is that normal?</summary><div><p>Yes. The app isn't code-signed, because signing costs money. Click <b>More info &rarr; Run anyway</b>, or build it from source with <code>cargo build --release</code>.</p></div></details>
+      <details><summary>How do I start it with Windows?</summary><div><p>Press <kbd>Win</kbd>+<kbd>R</kbd>, type <code>shell:startup</code>, and put a shortcut to <code>traymouse.exe</code> in that folder, or a <code>.cmd</code> file containing <code>npx traymouse</code>.</p></div></details>
+      <details><summary>How do I close or update it?</summary><div><p>Right-click the widget and choose <b>Quit</b>. With npm, <code>npx traymouse@latest</code> gets the newest version; otherwise download the latest <code>traymouse.exe</code>.</p></div></details>
+      <details><summary>What if I have more than one supported mouse?</summary><div><p>TrayMouse shows the first one that's switched on.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section id="pixelpet" aria-labelledby="h-pet">
+  <div class="wrap">
+    <div class="card maker rv">
+      <span class="kicker">From the same maker</span>
+      <h2 id="h-pet">Claude Pixel Pet</h2>
+      <p>A tiny pixel-art pet that sits on your Windows desktop and reacts to how you use Claude Code. One small Rust <code>.exe</code>, free and open source.</p>
+      <img src="pixelpet.gif" width="800" height="130" loading="lazy" decoding="async" alt="Claude Pixel Pet animated through its five moods: idle, working, sleeping, scream and RIP">
+      <div class="ctas">
+        <div class="cmd"><span class="p" aria-hidden="true">&gt;</span><code>npx claude-pixel-pet</code><button class="copy" type="button" data-copy="npx claude-pixel-pet" aria-label="Copy Claude Pixel Pet install command"><svg aria-hidden="true"><use href="#cp"/></svg><span>Copy</span></button></div>
+        <a class="btn btn-primary" href="https://pixelpet.dev" target="_blank" rel="noopener">Visit pixelpet.dev<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><a class="brand" href="#top" style="font-size:15px"><svg aria-hidden="true" style="width:12px;height:19px"><use href="#m"/></svg>TrayMouse</a><div style="margin-top:6px">MIT licensed. Protocol knowledge from Solaar and OpenRazer.</div></div>
+    <nav aria-label="Footer">
+      <a href="https://github.com/giannisBFMV/traymouse">GitHub</a>
+      <a href="https://github.com/giannisBFMV/traymouse/releases/latest">Releases</a>
+      <a href="https://www.npmjs.com/package/traymouse">npm</a>
+      <a href="https://github.com/giannisBFMV/traymouse/issues/new/choose">Issues</a>
+    </nav>
+  </div>
+</footer>
+
+<div class="sr" aria-live="polite" id="announce"></div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const say = t => { const a = document.getElementById('announce'); a.textContent = ''; setTimeout(() => a.textContent = t, 50); };
+
+  // copy buttons
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    const label = b.querySelector('span'), use = b.querySelector('use');
+    try { await navigator.clipboard.writeText(b.dataset.copy); label.textContent = 'Copied'; use.setAttribute('href', '#ck'); b.classList.add('ok'); say('Copied to clipboard'); }
+    catch { label.textContent = 'Press Ctrl+C'; getSelection().selectAllChildren(b.previousElementSibling); }
+    clearTimeout(b.t); b.t = setTimeout(() => { label.textContent = 'Copy'; use.setAttribute('href', '#cp'); b.classList.remove('ok'); }, 1800);
+  }));
+
+  // scroll reveals
+  const rv = document.querySelectorAll('.rv:not(.hero .rv)');
+  if (reduce || !('IntersectionObserver' in window)) rv.forEach(e => e.classList.add('in'));
+  else {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+    rv.forEach(e => io.observe(e));
+  }
+
+  // live widget: steps mirror the real app (default lavender, custom colors, <25% red, charging bolt, red X)
+  const L = '#968cff', w = document.getElementById('live'), pct = w.querySelector('.pct');
+  const S = [
+    { p: 87, c: L }, { p: 87, c: '#38bdf8' }, { p: 87, c: '#4ade80' }, { p: 87, c: '#f472b6' }, { p: 87, c: '#fbbf24' },
+    { p: 18, c: L, cls: 'low' }, { p: 64, c: L, cls: 'chg' }, { c: L, cls: 'off' }
+  ];
+  const chips = document.getElementById('chips'), btns = [...chips.querySelectorAll('.chip')];
+  chips.hidden = false;
+  let i = 0, timer;
+  const show = n => {
+    i = n; const s = S[n];
+    w.className = 'widget ' + (s.cls || '');
+    w.style.setProperty('--m', s.c);
+    if (s.p) pct.textContent = s.p + '%';
+    if (!reduce) w.animate([{ opacity: .35, filter: 'blur(2px)' }, { opacity: 1, filter: 'none' }], { duration: 320, easing: 'ease-out' });
+    const active = btns.reduce((a, b) => +b.dataset.to <= n ? b : a, btns[0]);
+    btns.forEach(b => b.setAttribute('aria-pressed', b === active));
+  };
+  const play = () => { if (!reduce) timer = setInterval(() => show((i + 1) % S.length), 1700); };
+  btns.forEach(b => b.addEventListener('click', () => { clearInterval(timer); timer = null; show(+b.dataset.to); }));
+  // pause the loop while the hero is off screen
+  new IntersectionObserver(([e]) => { if (e.isIntersecting && timer === undefined) play(); else if (!e.isIntersecting && timer) { clearInterval(timer); timer = undefined; } }).observe(w);
+})();
+</script>
+</body>
+</html>
