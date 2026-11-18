@@ -150,8 +150,25 @@ h3{font-size:17.5px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
 .card .ico svg{width:20px;height:20px}
 
 /* states */
-.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
-.state{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+/* bento: 3 + 2 on desktop, 2 columns on tablet (last card full width), 1 on phones */
+.states{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.state{grid-column:span 2;min-width:0;margin:0;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;transition:border-color .25s}
+.state:hover{border-color:var(--line2)}
+.state.wide{grid-column:span 3}
+@media (max-width:900px){.states{grid-template-columns:repeat(2,minmax(0,1fr))}.state,.state.wide{grid-column:auto}.state:last-child{grid-column:1/-1}}
+@media (max-width:560px){.states{grid-template-columns:minmax(0,1fr)}}
+.state .pct{transition:opacity .3s}
+.state .widget.fade .pct{opacity:0}
+.state .widget .bolt{color:#fff}
+.dots{margin-left:auto;display:flex;gap:8px;padding-right:4px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--c);opacity:.3;transition:opacity .35s,transform .35s,box-shadow .35s}
+.dots i.on{opacity:1;transform:scale(1.25);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
+.js [data-story=low] .widget.low{animation:pulse 1.3s ease-out 2}
+.js .state .widget.off .x{animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+.js .state .widget.chg .bolt{animation:flash .7s ease-out}
+@keyframes pulse{35%{filter:drop-shadow(0 0 7px rgba(255,70,70,.75))}}
+@keyframes pop{from{opacity:0;transform:scale(.3)}}
+@keyframes flash{from{opacity:0;transform:scale(.5)}40%{opacity:1;filter:drop-shadow(0 0 6px #fff)}}
 .state .tb{background:#1c1c22;border-radius:10px;height:64px;display:flex;align-items:center;gap:6px;padding:0 12px;margin-bottom:16px;overflow:hidden;flex-wrap:wrap;border:1px solid rgba(255,255,255,.06)}
 .state .widget{margin:0;padding:0 6px;font-size:18px}
 .state .widget .ms{width:13px;height:23px}
@@ -364,11 +381,11 @@ footer a:hover{color:var(--text);text-decoration:underline}
       <p>Five states cover everything your mouse can tell you.</p>
     </div>
     <div class="states">
-      <figure class="state rv" style="--i:0;margin:0"><div class="tb" role="img" aria-label="Lavender mouse icon, 87%"><span class="widget" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span></div><figcaption><h3>Battery level</h3><p>The percentage in white, next to the tray.</p></figcaption></figure>
-      <figure class="state rv" style="--i:1;margin:0"><div class="tb" role="img" aria-label="Mouse icon in cyan, green and pink, each 87%"><span class="widget" style="--m:#38bdf8" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span><span class="widget" style="--m:#4ade80" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span><span class="widget" style="--m:#f472b6" aria-hidden="true"><svg class="ms"><use href="#m"/></svg></span></div><figcaption><h3>Pick any color</h3><p>Right-click &rarr; <i>Mouse color&hellip;</i></p></figcaption></figure>
-      <figure class="state rv" style="--i:2;margin:0"><div class="tb" role="img" aria-label="Red mouse icon, red 18%"><span class="widget low" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">18%</span></span></div><figcaption><h3>Below 25%</h3><p>Mouse and number turn red.</p></figcaption></figure>
-      <figure class="state rv" style="--i:0;margin:0"><div class="tb" role="img" aria-label="Mouse icon, charging bolt, 64%; and red mouse icon, bolt, red 12%"><span class="widget chg" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="bolt"><use href="#b"/></svg><span class="pct">64%</span></span><span class="widget chg low" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="bolt" style="color:#fff"><use href="#b"/></svg><span class="pct">12%</span></span></div><figcaption><h3>Plugged in</h3><p>A bolt plus the current level.</p></figcaption></figure>
-      <figure class="state rv" style="--i:1;margin:0"><div class="tb" role="img" aria-label="Mouse icon with a red cross"><span class="widget off" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="x"><use href="#x"/></svg></span></div><figcaption><h3>Not answering</h3><p>Receiver unplugged or mouse off.</p></figcaption></figure>
+      <figure class="state rv" data-story="level" style="--i:0"><div class="tb" role="img" aria-label="Lavender mouse icon, 87%"><span class="widget" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span></div><figcaption><h3>Battery level</h3><p>The percentage in white, next to the tray.</p></figcaption></figure>
+      <figure class="state rv" data-story="low" style="--i:1"><div class="tb" role="img" aria-label="Red mouse icon, red 18%"><span class="widget low" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">18%</span></span></div><figcaption><h3>Below 25%</h3><p>Mouse and number turn red.</p></figcaption></figure>
+      <figure class="state rv" data-story="off" style="--i:2"><div class="tb" role="img" aria-label="Mouse icon with a red cross"><span class="widget off" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="x"><use href="#x"/></svg><span class="pct">87%</span></span></div><figcaption><h3>Not answering</h3><p>Receiver unplugged or mouse off.</p></figcaption></figure>
+      <figure class="state wide rv" data-story="color" style="--i:0"><div class="tb" role="img" aria-label="Mouse icon at 87%, available in lavender, cyan, mint, pink and gold"><span class="widget" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><span class="pct">87%</span></span><span class="dots" aria-hidden="true"><i class="on" style="--c:#968cff"></i><i style="--c:#38bdf8"></i><i style="--c:#4ade80"></i><i style="--c:#f472b6"></i><i style="--c:#fbbf24"></i></span></div><figcaption><h3>Pick any color</h3><p>Right-click &rarr; <i>Mouse color&hellip;</i></p></figcaption></figure>
+      <figure class="state wide rv" data-story="chg" style="--i:1"><div class="tb" role="img" aria-label="Mouse icon, charging bolt, 64%"><span class="widget chg" aria-hidden="true"><svg class="ms"><use href="#m"/></svg><svg class="bolt"><use href="#b"/></svg><span class="pct">64%</span></span></div><figcaption><h3>Plugged in</h3><p>A bolt plus the current level.</p></figcaption></figure>
     </div>
     <figure class="demo rv">
       <img src="demo.gif" width="861" height="204" loading="lazy" decoding="async" alt="Recording of TrayMouse on the Windows 11 taskbar: battery level, custom colors, low battery, charging and disconnected">
@@ -577,6 +594,32 @@ footer a:hover{color:var(--text);text-decoration:underline}
   btns.forEach(b => b.addEventListener('click', () => { clearInterval(timer); timer = null; show(+b.dataset.to); }));
   // pause the loop while the hero is off screen
   new IntersectionObserver(([e]) => { if (e.isIntersecting && timer === undefined) play(); else if (!e.isIntersecting && timer) { clearInterval(timer); timer = undefined; } }).observe(w);
+
+  // state cards: each loops a short story; the HTML holds the final frame for no-JS / reduced motion
+  if (reduce) return;
+  const count = (a, b, t, cls) => Array.from({ length: Math.abs(b - a) + 1 }, (_, n) => { const p = a + Math.sign(b - a) * n; return { p, t, cls: cls(p) }; });
+  const hold = (fs, t) => (fs[fs.length - 1].t = t, fs[0].in = 1, fs);
+  const stories = {
+    level: hold(count(92, 87, 650, () => ''), 3200),
+    low: hold(count(27, 18, 420, p => p < 25 ? 'low' : ''), 3000),
+    off: [{ p: 87, t: 2000, in: 1 }, { p: 87, cls: 'fade', t: 300 }, { cls: 'off', t: 3000 }],
+    color: [L, '#38bdf8', '#4ade80', '#f472b6', '#fbbf24'].map(c => ({ p: 87, c, t: 1700 })),
+    chg: hold([{ p: 12, cls: 'low', t: 900 }, ...count(12, 64, 55, p => 'chg' + (p < 25 ? ' low' : ''))], 3000)
+  };
+  document.querySelectorAll('[data-story]').forEach(card => {
+    const fs = stories[card.dataset.story], w = card.querySelector('.widget'), pct = w.querySelector('.pct'), dots = [...card.querySelectorAll('.dots i')];
+    let k = 0, t;
+    const step = () => {
+      const f = fs[k];
+      w.className = 'widget ' + (f.cls || '');
+      if (f.p) pct.textContent = f.p + '%';
+      if (f.c) { w.style.setProperty('--m', f.c); dots.forEach(d => d.classList.toggle('on', d.style.getPropertyValue('--c') === f.c)); }
+      if (f.in) w.animate([{ opacity: .35, filter: 'blur(2px)' }, { opacity: 1, filter: 'none' }], { duration: 320, easing: 'ease-out' });
+      k = (k + 1) % fs.length; t = setTimeout(step, f.t);
+    };
+    // run only while visible
+    new IntersectionObserver(([e]) => { clearTimeout(t); if (e.isIntersecting) step(); }).observe(card);
+  });
 })();
 </script>
 </body>
