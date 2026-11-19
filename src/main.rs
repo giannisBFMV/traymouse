@@ -25,6 +25,37 @@ const POLL_MS: u32 = 5_000; // short, so switching the mouse off/on shows within
 const TEXT: f32 = 14.0; // font size, like tray text
 const TEXT_SMALL: f32 = 11.0; // next to the charging bolt
 const DEFAULT_GAP: i32 = 2; // px between the widget and the tray arrow
+const SNAP: f32 = 24.0; // dropped this close (in 96-dpi px) to the tray, it keeps following the tray
+
+/// Where the widget sits: glued to the tray (follows it as icons come and go) or parked anywhere on the taskbar.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Pos {
+    Tray(i32), // px between our right edge and the tray's left edge
+    Free(i32), // px from the taskbar's left edge to ours
+}
+
+impl Pos {
+    /// `gap` and `free` describe the same spot; near the tray we follow it, otherwise stay put.
+    fn pick(gap: i32, free: i32, snap: i32) -> Pos {
+        if gap.abs() <= snap { Pos::Tray(gap) } else { Pos::Free(free) }
+    }
+
+    fn save(self) -> String {
+        match self {
+            Pos::Tray(g) => g.to_string(),
+            Pos::Free(x) => format!("free {x}"),
+        }
+    }
+
+    /// Plain number = tray gap (older versions only wrote that), "free N" = parked.
+    fn load(s: &str) -> Option<Pos> {
+        let s = s.trim();
+        match s.strip_prefix("free ") {
+            Some(x) => x.trim().parse().ok().map(Pos::Free),
+            None => s.parse().ok().map(Pos::Tray),
+        }
+    }
+}
 const TIMER_POLL: usize = 1;
 const TIMER_FULLSCREEN: usize = 2;
 
@@ -200,7 +231,7 @@ struct State {
     tray: HWND,
     look: Look,
     notify: HWND,
-    gap: Option<i32>, // distance from our right edge to the tray's left edge; None = default
+    pos: Pos,
     top: i32,
     w: usize,
     h: usize,
@@ -231,7 +262,7 @@ fn settings_dir() -> PathBuf {
 }
 
 fn pos_file() -> PathBuf {
-    settings_dir().join("gap.txt") // px between our right edge and the tray
+    settings_dir().join("gap.txt") // Pos::save(); the name predates free positions
 }
 
 fn rect(hwnd: HWND) -> RECT {
@@ -241,9 +272,16 @@ fn rect(hwnd: HWND) -> RECT {
 }
 
 impl State {
-    /// Follows the tray's left edge, so it shifts when tray icons are added or removed.
+    /// Near the tray it follows the tray's left edge (shifts when tray icons come and go); elsewhere it stays put.
     fn x(&self) -> i32 {
-        rect(self.notify).left - self.gap.unwrap_or(DEFAULT_GAP) - self.w as i32
+        match self.pos {
+            Pos::Tray(g) => rect(self.notify).left - g - self.w as i32,
+            Pos::Free(x) => rect(self.tray).left + x,
+        }
+    }
+
+    fn snap(&self) -> i32 {
+        (SNAP * self.look.scale) as i32
     }
 
     fn draw(&mut self) {
@@ -286,7 +324,8 @@ impl State {
     }
 
     fn move_to(&mut self, x: i32) {
-        self.gap = Some(rect(self.notify).left - x - self.w as i32);
+        let gap = rect(self.notify).left - x - self.w as i32;
+        self.pos = Pos::pick(gap, x - rect(self.tray).left, self.snap());
         unsafe {
             SetWindowPos(self.hwnd, null_mut(), x, self.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)
         };
@@ -388,7 +427,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
             ReleaseCapture();
             with(|s| {
                 if s.drag_dx.take().is_some() {
-                    let _ = std::fs::write(pos_file(), s.gap.unwrap_or(DEFAULT_GAP).to_string());
+                    let _ = std::fs::write(pos_file(), s.pos.save());
                 }
             });
         }
@@ -417,9 +456,8 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
                 MENU_RESET => {
                     let _ = std::fs::remove_file(pos_file());
                     with(|s| {
-                        s.gap = None;
+                        s.pos = Pos::Tray(DEFAULT_GAP);
                         s.move_to(s.x());
-                        s.gap = None;
                     });
                 }
                 MENU_COLOR => {
@@ -493,14 +531,22 @@ fn main() {
             null_mut(), null_mut(), inst, null_mut(),
         );
 
-        let saved_gap = std::fs::read_to_string(pos_file()).ok().and_then(|s| s.trim().parse().ok());
+        let saved = std::fs::read_to_string(pos_file()).ok().and_then(|s| Pos::load(&s)).unwrap_or(Pos::Tray(DEFAULT_GAP));
         STATE.with(|s| {
             *s.borrow_mut() = Some(State {
-                hwnd, tray, look, notify, gap: saved_gap, top: bar.top, w, h,
+                hwnd, tray, look, notify, pos: saved, top: bar.top, w, h,
                 last: None, drag_dx: None,
             })
         });
-        with(|s| s.refresh());
+        with(|s| {
+            // older versions saved every spot as a tray gap; a far one is really a parked position
+            if let Pos::Tray(g) = s.pos {
+                if g.abs() > s.snap() {
+                    s.pos = Pos::Free(s.x() - rect(s.tray).left);
+                }
+            }
+            s.refresh()
+        });
         ShowWindow(hwnd, SW_SHOWNOACTIVATE);
         SetTimer(hwnd, TIMER_POLL, POLL_MS, None);
         SetTimer(hwnd, TIMER_FULLSCREEN, 500, None);
@@ -516,6 +562,19 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn position_snaps_to_tray_only_when_close() {
+        assert_eq!(Pos::pick(2, 1500, 24), Pos::Tray(2));
+        assert_eq!(Pos::pick(-10, 1500, 24), Pos::Tray(-10));
+        assert_eq!(Pos::pick(900, 60, 24), Pos::Free(60));
+        for p in [Pos::Tray(2), Pos::Tray(-5), Pos::Free(60)] {
+            assert_eq!(Pos::load(&p.save()), Some(p));
+        }
+        assert_eq!(Pos::load("37
+"), Some(Pos::Tray(37))); // file from older versions
+        assert_eq!(Pos::load("junk"), None);
+    }
 
     #[test]
     #[ignore = "needs a supported mouse connected: cargo test -- --ignored"]

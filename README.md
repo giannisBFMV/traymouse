@@ -15,6 +15,8 @@ No vendor software, no tray clutter, no surprises when your mouse dies mid-game.
 - 🎮 **Stays out of your way.** Hides automatically over fullscreen games and videos.
 - 🪶 **Tiny.** One ~450 KB `.exe`, about 12 MB of RAM, nothing to install.
 
+**What's new in v1.0.3:** the widget now stays where you put it when tray icons come and go. See the [changelog](CHANGELOG.md).
+
 ## Download
 
 **Option 1: the exe.** Grab **`traymouse.exe`** from the [latest release](../../releases/latest) and double-click it. That's it.
@@ -57,7 +59,7 @@ If several supported mice are connected, TrayMouse shows the first one that's sw
 
 | Do this | To |
 |---|---|
-| **Drag** the widget | change its distance from the tray (it's remembered) |
+| **Drag** the widget | move it anywhere on the taskbar (it's remembered). Drop it next to the tray and it follows the tray icons; drop it anywhere else and it stays put |
 | **Right-click** → *Refresh now* | read the battery immediately (it also refreshes every 5 seconds) |
 | **Right-click** → *Mouse color…* / *Reset color* | change the mouse icon's color |
 | **Right-click** → *Reset position* | put it back next to the tray |

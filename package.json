@@ -1,6 +1,6 @@
 {
   "name": "traymouse",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Your wireless mouse battery, right on the Windows taskbar. LAMZU, Logitech, Razer.",
   "bin": {
     "traymouse": "bin/traymouse.js"
