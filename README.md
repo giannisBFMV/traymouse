@@ -38,7 +38,7 @@ Running it again while TrayMouse is already up does nothing, so you never get tw
 
 | Mouse | Status | How the battery is read |
 |---|---|---|
-| **LAMZU Maya X** (8K dongle) | ✅ Tested | The same request LAMZU's official web driver ([lamzu.net](https://www.lamzu.net)) sends to the dongle. |
+| **LAMZU Maya X** (8K dongle) | ✅ Tested (receiver and cable)| The same request LAMZU's official web driver ([lamzu.net](https://www.lamzu.net)) sends to the dongle. |
 | **Logitech G Pro Wireless** | ✅ Tested (receiver and cable) | Logitech's HID++ 2.0 protocol, battery voltage feature (`0x1001`), converted to a percentage. |
 | **Logitech G Pro X Superlight** | 🧪 Untested | Same protocol and battery feature as the G Pro Wireless, so it's very likely to work. |
 | **Logitech G Pro X Superlight 2** | 🧪 Untested | HID++ 2.0 unified battery feature (`0x1004`), which reports a percentage directly. |
