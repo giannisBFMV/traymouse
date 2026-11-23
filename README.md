@@ -15,7 +15,7 @@ No vendor software, no tray clutter, no surprises when your mouse dies mid-game.
 - 🎮 **Stays out of your way.** Hides automatically over fullscreen games and videos.
 - 🪶 **Tiny.** One ~450 KB `.exe`, about 12 MB of RAM, nothing to install.
 
-**What's new in v1.0.3:** the widget now stays where you put it when tray icons come and go. See the [changelog](CHANGELOG.md).
+**What's new in v1.0.4:** TrayMouse has its own app icon. See the [changelog](CHANGELOG.md).
 
 ## Download
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.4
+
+**New: an app icon** 🎨
+
+`traymouse.exe` now has its own icon (the purple TrayMouse logo), so it's easy to spot in File Explorer, the Start menu, Task Manager and your Downloads folder.
+
 ## v1.0.3
 
 **Fixed: the widget moved when tray icons changed** 🐛
